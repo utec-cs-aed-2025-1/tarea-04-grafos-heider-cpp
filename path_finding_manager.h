@@ -165,7 +165,74 @@ class PathFindingManager {
         
         set_final_path(parent);
     }
+    void best_first_search(Graph &graph) {
+        std::unordered_map<Node *, Node *> parent;
+        std::unordered_map<Node *, double> h_score;
+        std::set<Entry> pq;
+        
+        // Función heurística: distancia euclidiana
+        auto heuristic = [](Node* a, Node* b) -> double {
+            float dx = a->coord.x - b->coord.x;
+            float dy = a->coord.y - b->coord.y;
+            double euclidean_dist = std::sqrt(dx * dx + dy * dy);
+            return euclidean_dist;
+        };
+        
+        // Inicializar scores
+        for (auto& [id, node] : graph.nodes) {
+            h_score[node] = std::numeric_limits<double>::infinity();
+        }
+        h_score[src] = heuristic(src, dest);
+        pq.insert({src, h_score[src]});
+        
+        // Set para rastrear nodos visitados
+        std::unordered_set<Node*> visited;
+        
+        int iteration = 0;
+        
+        while (!pq.empty()) {
+            Node* current = pq.begin()->node;
+            pq.erase(pq.begin());
+            
+            // Marcar como visitado
+            if (visited.find(current) != visited.end()) {
+                continue;
+            }
+            visited.insert(current);
+            
+            if (current == dest) break;
+            
+            for (Edge* edge : current->edges) {
+                Node* neighbor = (edge->src == current) ? edge->dest : edge->src;
+                
+                // Si ya fue visitado, saltar
+                if (visited.find(neighbor) != visited.end()) {
+                    continue;
+                }
+                
+                // solo se usa la heurística
+                if (parent.find(neighbor) == parent.end()) {
+                    parent[neighbor] = current;
+                    h_score[neighbor] = heuristic(neighbor, dest);
+                    pq.insert({neighbor, h_score[neighbor]});
+                    
+                    // Visualización
+                    visited_edges.push_back(sfLine(
+                        current->coord, neighbor->coord,
+                        sf::Color::White, 1.0f
+                    ));
 
+                    if (++iteration % timmer == 0) {
+                        render();
+                    }
+                }
+            }
+        }
+        
+        render();
+        
+        set_final_path(parent);
+    }
     //* --- render ---
     // En cada iteración de los algoritmos esta función es llamada para dibujar los cambios en el 'window_manager'
     void render() {
