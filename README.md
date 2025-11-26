@@ -76,7 +76,7 @@ En esta sección se presenta el análisis de complejidad de los algoritmos imple
 La métrica de costo usada en la implementación es el tiempo:
 
 $$
-	ext{tiempo} = \frac{\text{longitud}}{\text{velocidad\_m\'axima}}
+ext{tiempo} = \frac{\text{longitud}}{\text{velocidad\_m\'axima}}
 $$
 
 1.2 Complejidad por partes
