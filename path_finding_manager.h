@@ -102,8 +102,67 @@ class PathFindingManager {
     
     void a_star(Graph &graph) {
         std::unordered_map<Node *, Node *> parent;
-        // TODO: Add your code here
+        std::unordered_map<Node *, double> g_score;  // Costo real desde src
+        std::unordered_map<Node *, double> f_score;  // g_score + heurística
+        std::set<Entry> pq;
+        
+        // Función heurística -> distancia euclidiana
+        auto heuristic = [](Node* a, Node* b) -> double {
+            float dx = a->coord.x - b->coord.x;
+            float dy = a->coord.y - b->coord.y;
+            double euclidean_dist = std::sqrt(dx * dx + dy * dy);
+            return euclidean_dist;
+        };
+        
+        // Inicializar costos
+        for (auto& [id, node] : graph.nodes) {
+            g_score[node] = std::numeric_limits<double>::infinity();
+            f_score[node] = std::numeric_limits<double>::infinity();
+        }
+        g_score[src] = 0.0;
+        f_score[src] = heuristic(src, dest);
+        pq.insert({src, f_score[src]});
+        
+        int iteration = 0;  // Contador para renderizar
+        
+        while (!pq.empty()) {
+            Node* current = pq.begin()->node;
+            pq.erase(pq.begin());
+            
+            if (current == dest) break;
+            
+            for (Edge* edge : current->edges) {
+                Node* neighbor = (edge->src == current) ? edge->dest : edge->src;
+                
+                // Tiempo como peso de la arista
+                double weight = edge->length / edge->max_speed;
+                double tentative_g_score = g_score[current] + weight;
+                
+                if (tentative_g_score < g_score[neighbor]) {
+                    // Actualizar el camino
+                    parent[neighbor] = current;
+                    g_score[neighbor] = tentative_g_score;
+                    f_score[neighbor] = g_score[neighbor] + heuristic(neighbor, dest);
 
+                    pq.erase({neighbor, f_score[neighbor]});
+                    pq.insert({neighbor, f_score[neighbor]});
+                    
+                    // Visualización
+                    visited_edges.push_back(sfLine(
+                        current->coord, neighbor->coord,
+                        sf::Color::White, 1.0f
+                    ));
+                    
+                    // Renderizar cada N iteraciones
+                    if (++iteration % timmer == 0) {
+                        render();
+                    }
+                }
+            }
+        }
+
+        render();
+        
         set_final_path(parent);
     }
 
