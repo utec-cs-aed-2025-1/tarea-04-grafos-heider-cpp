@@ -18,3 +18,14 @@ if(SFML_FOUND)
 else()
     message("SFML not found")
 endif()
+
+# Anadido: copiar archivos CSV al directorio de build
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/nodes.csv
+        ${CMAKE_CURRENT_BINARY_DIR}/nodes.csv
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/edges.csv
+        ${CMAKE_CURRENT_BINARY_DIR}/edges.csv
+    COMMENT "Copiando archivos CSV al directorio de build"
+)
